@@ -4,7 +4,7 @@ contains
 
 subroutine push_realloc_1d(the_array, the_item)
     ! VARIABLES
-    real, allocatable, intent(out) :: the_array(:)
+    real, allocatable, intent(inout) :: the_array(:)
     real, intent(in) :: the_item
     real, allocatable :: tmp_array(:)
 

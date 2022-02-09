@@ -1,15 +1,18 @@
 #!/bin/bash
 
-# function files
-gfortran -c -std=f2008 -Wextra -Wall -pedantic testfunction_module.f90
-gfortran -c -std=f2008 -Wextra -Wall -pedantic type_module.f90
-gfortran -c -std=f2008 -Wextra -Wall -pedantic readparams_module.f90
-gfortran -c -std=f2008 -Wextra -Wall -pedantic utilities_module.f90
+# remove automatic module files, and object files
+rm *.mod
+rm *.o
 
-# main file
-gfortran -std=f2008 -Wextra -Wall -pedantic \
-  testfunction_module.o \
-  type_module.o \
-  readparams_module.o \
-  utilities_module.o \
-  main_prog.f90 -o main_prog
+gfortran -c -std=f2008 -Wextra -Wall -pedantic testfunction_module.f90 && \
+  gfortran -c -std=f2008 -Wextra -Wall -pedantic type_module.f90 && \
+  gfortran -c -std=f2008 -Wextra -Wall -pedantic readparams_module.f90 && \
+  gfortran -c -std=f2008 -Wextra -Wall -pedantic utilities_module.f90 && \
+  gfortran -c -std=f2008 -Wextra -Wall -pedantic asteroid_module.f90 && \
+  gfortran -std=f2008 -Wextra -Wall -pedantic \
+    testfunction_module.o \
+    type_module.o \
+    readparams_module.o \
+    utilities_module.o \
+    asteroid_module.o \
+    main_prog.f90 -o main_prog

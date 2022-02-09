@@ -2,6 +2,7 @@ program main_prog
 
     ! IMPORTS
     ! use testfunction_module
+    use asteroid_module
     use type_module
     use readparams_module
     use utilities_module
@@ -13,15 +14,15 @@ program main_prog
     integer, parameter :: X = 1
     integer, parameter :: Y = 2
     integer, parameter :: Z = 3
+    integer :: i
 
     ! Variables for asteroid creation
     type(particle), allocatable :: particle_list(:)
-    integer :: astInd
-    integer :: numAsteroids
-    integer :: actual_num_particles = 0
-    real :: total_volume = 0.0
-    real :: spacing
-    real, allocatable :: tmp_grid(:,:)
+    integer :: ast_ind
+    integer :: num_asteroids
+
+    ! Varibles that are hard-coded parameters for now
+    real :: PARTICLE_RADIUS = 0.4
 
     ! Variables for program parameters
     character(len=*), parameter :: PARAM_FILE_NAME = "params.txt"
@@ -46,35 +47,19 @@ program main_prog
     print*, "steps=",NUM_TIMESTEPS
     print*, "time=",MAX_TIME
 
-    print*, ASTEROID_POSITIONS(:,2) ! second asteroid position
+    !print*, ASTEROID_POSITIONS(:,2) ! second asteroid position
 
-    ! Count how many particles we're gonna need to avoid reallocation
-
-    numAsteroids = size(ASTEROID_MASSES)
-
-    ! calculate the total volume that needs to be filled with particles
-    ! this is not the actual volume, but the approximate rectangular volume to make grid
-    ! do astInd = 1, numAsteroids, 1
-    !   total_volume = total_volume + ( (4.0/3.0) * PI * (ASTEROID_RADII(astInd)**3) )
+    ! create the asteroids
+    print*, "[main_prog] adding asteroids..."
+    num_asteroids = size(ASTEROID_MASSES)
+    do ast_ind = 1, num_asteroids, 1
+      call add_asteroid(particle_list, ASTEROID_MASSES(ast_ind), ASTEROID_RADII(ast_ind), &
+        PARTICLE_RADIUS, ASTEROID_POSITIONS(:,ast_ind), ASTEROID_VELOCITIES(:,ast_ind), ast_ind) ! modifies particle_list
+    end do
+    print*, "[main_prog] DONE adding asteroids."
+    print*, "number of particles: ", size(particle_list)
+    ! do i = 1, size(particle_list), 1
+    !   call print_particle(particle_list(i))
     ! end do
-    do astInd = 1, numAsteroids, 1
-      total_volume = total_volume + ASTEROID_RADII(astInd)**3
-    end do
-    print*, "Total volume=", total_volume
-
-    ! calculate grid points
-    spacing = (total_volume / NUM_PARTICLES)**(1.0/3.0)
-    do astInd = 1, numAsteroids, 1
-
-      ! count up how many of the grid points fall into the spheres
-      
-    end do
-
-    ! allocate the list of all particles
-
-    ! now, create the actual particles for each asteroid
-    !do astInd = 1,numAsteroids,1
-      
-    !end do
 
 end program main_prog
