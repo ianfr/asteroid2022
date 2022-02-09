@@ -126,4 +126,47 @@ subroutine read_particle_list_from_file(particle_list, filename)
     print*, "[read_particle_list_from_file] DONE reading."
 end subroutine read_particle_list_from_file
 
+character(len=20) function str(k)
+!   "Convert an integer to string."
+    integer, intent(in) :: k
+    write (str, *) k
+    str = adjustl(str)
+end function str
+
+subroutine write_particle_list_for_paraview(particle_list, dirname, filenumber)
+    use, intrinsic :: iso_fortran_env, only: error_unit
+    ! Inputs
+    type(particle), dimension(:), intent(in) :: particle_list
+    character(len=*), intent(in) :: dirname
+    integer, intent(in) :: filenumber
+    character(len=:), allocatable :: format
+
+    ! Internal variables
+    integer file_unit, rc, i
+    character(len=:), allocatable :: filename, filename_final
+
+    ! subroutine
+    print*, "[write_particle_list_for_paraview] writing..."
+
+    open(action='write', file=dirname//'/ast.csv.'//trim(str(filenumber)), iostat=rc, newunit=file_unit)
+
+    if (rc /= 0) then
+        write (error_unit, '(3a, i0)') 'Writing file "', filename, '" failed: ', rc
+        stop
+    end if
+
+    write (file_unit, *, iostat=rc) "rx, ry, rz, col_ast"
+    
+    format = "(ES14.8, A2, ES14.8, A2, ES14.8, A2, I1)"
+    do i = 1, size(particle_list), 1
+        write (file_unit, format, iostat=rc) particle_list(i)%pos(1), ', ', particle_list(i)%pos(2), ', ', &
+            particle_list(i)%pos(3), ', ', particle_list(i)%color
+        if (rc /= 0) exit                        
+    end do
+
+    close (file_unit)
+    print*, "[write_particle_list_for_paraview] DONE writing."
+
+end subroutine write_particle_list_for_paraview
+
 end module type_module 

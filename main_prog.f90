@@ -22,7 +22,7 @@ program main_prog
     integer :: num_asteroids
 
     ! Varibles that are hard-coded parameters for now
-    real :: PARTICLE_RADIUS = 0.4
+    real :: PARTICLE_RADIUS = 0.1
 
     ! Variables for program parameters
     character(len=*), parameter :: PARAM_FILE_NAME = "params.txt"
@@ -50,18 +50,20 @@ program main_prog
     !print*, ASTEROID_POSITIONS(:,2) ! second asteroid position
 
     ! create the asteroids
-    ! print*, "[main_prog] adding asteroids..."
-    ! num_asteroids = size(ASTEROID_MASSES)
-    ! do ast_ind = 1, num_asteroids, 1
-    !   call add_asteroid(particle_list, ASTEROID_MASSES(ast_ind), ASTEROID_RADII(ast_ind), &
-    !     PARTICLE_RADIUS, ASTEROID_POSITIONS(:,ast_ind), ASTEROID_VELOCITIES(:,ast_ind), ast_ind) ! modifies particle_list
-    ! end do
-    ! print*, "[main_prog] DONE adding asteroids."
-    ! print*, "number of particles: ", size(particle_list)
+    print*, "[main_prog] adding asteroids..."
+    num_asteroids = size(ASTEROID_MASSES)
+    do ast_ind = 1, num_asteroids, 1
+      call add_asteroid(particle_list, ASTEROID_MASSES(ast_ind), ASTEROID_RADII(ast_ind), &
+        PARTICLE_RADIUS, ASTEROID_POSITIONS(:,ast_ind), ASTEROID_VELOCITIES(:,ast_ind), ast_ind) ! modifies particle_list
+    end do
+    print*, "[main_prog] DONE adding asteroids."
+    print*, "number of particles: ", size(particle_list)
 
-    !call write_particle_list_to_file(particle_list, "small_batch.txt")
+    call write_particle_list_to_file(particle_list, "large_batch.txt")
 
-    call read_particle_list_from_file(particle_list, "small_batch.txt")
-    print*, (size(particle_list))
+    !call read_particle_list_from_file(particle_list, "small_batch.txt")
+    !print*, (size(particle_list))
+    
+    call write_particle_list_for_paraview(particle_list, "out_files", 1)
 
 end program main_prog

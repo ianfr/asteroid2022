@@ -4,12 +4,12 @@
 rm *.mod
 rm *.o
 
-ifort -stand f08 -c -warn all testfunction_module.f90 && \
-  ifort -stand f08 -c -warn all type_module.f90 && \
-  ifort -stand f08 -c -warn all readparams_module.f90 && \
-  ifort -stand f08 -c -warn all utilities_module.f90 && \
-  ifort -stand f08 -c -warn all asteroid_module.f90 && \
-  ifort -stand f08 -warn all \
+ifort -stand f08 -O2 -c -warn all testfunction_module.f90 && \
+  ifort -stand f08 -O2 -c -warn all type_module.f90 && \
+  ifort -stand f08 -O2 -c -warn all readparams_module.f90 && \
+  ifort -stand f08 -O2 -c -warn all utilities_module.f90 && \
+  ifort -stand f08 -O2 -c -warn all asteroid_module.f90 && \
+  ifort -stand f08 -O2 -warn all \
     testfunction_module.o \
     type_module.o \
     readparams_module.o \
