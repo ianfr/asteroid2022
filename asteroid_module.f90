@@ -110,6 +110,10 @@ subroutine add_asteroid(particle_list, mass_asteroid, radius, particle_radius, r
         end if
     end do
 
+    do i = 1, size(particle_list) 
+        particle_list(i)%id = i
+    end do
+
     ! returns modified particle_list
 end subroutine add_asteroid
 

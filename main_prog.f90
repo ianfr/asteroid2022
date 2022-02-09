@@ -50,16 +50,18 @@ program main_prog
     !print*, ASTEROID_POSITIONS(:,2) ! second asteroid position
 
     ! create the asteroids
-    print*, "[main_prog] adding asteroids..."
-    num_asteroids = size(ASTEROID_MASSES)
-    do ast_ind = 1, num_asteroids, 1
-      call add_asteroid(particle_list, ASTEROID_MASSES(ast_ind), ASTEROID_RADII(ast_ind), &
-        PARTICLE_RADIUS, ASTEROID_POSITIONS(:,ast_ind), ASTEROID_VELOCITIES(:,ast_ind), ast_ind) ! modifies particle_list
-    end do
-    print*, "[main_prog] DONE adding asteroids."
-    print*, "number of particles: ", size(particle_list)
-    ! do i = 1, size(particle_list), 1
-    !   call print_particle(particle_list(i))
+    ! print*, "[main_prog] adding asteroids..."
+    ! num_asteroids = size(ASTEROID_MASSES)
+    ! do ast_ind = 1, num_asteroids, 1
+    !   call add_asteroid(particle_list, ASTEROID_MASSES(ast_ind), ASTEROID_RADII(ast_ind), &
+    !     PARTICLE_RADIUS, ASTEROID_POSITIONS(:,ast_ind), ASTEROID_VELOCITIES(:,ast_ind), ast_ind) ! modifies particle_list
     ! end do
+    ! print*, "[main_prog] DONE adding asteroids."
+    ! print*, "number of particles: ", size(particle_list)
+
+    !call write_particle_list_to_file(particle_list, "small_batch.txt")
+
+    call read_particle_list_from_file(particle_list, "small_batch.txt")
+    print*, (size(particle_list))
 
 end program main_prog

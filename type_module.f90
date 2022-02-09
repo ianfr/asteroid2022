@@ -57,4 +57,73 @@ subroutine push_particle(the_array, the_item)
     the_array = tmp_array ! req. fortran 2003?
 end subroutine push_particle
 
+subroutine write_particle_list_to_file(particle_list, filename)
+    use, intrinsic :: iso_fortran_env, only: error_unit
+    ! Inputs
+    type(particle), dimension(:), intent(in) :: particle_list
+    character(len=*), intent(in) :: filename
+
+    ! Internal variables
+    integer file_unit, rc, i
+
+    ! subroutine
+    print*, "[write_particle_list_to_file] writing..."
+    open(action='write', file=filename, iostat=rc, newunit=file_unit)
+
+    if (rc /= 0) then
+        write (error_unit, '(3a, i0)') 'Writing file "', filename, '" failed: ', rc
+        stop
+    end if
+    
+    write (file_unit, *, iostat=rc) size(particle_list)
+    do i = 1, size(particle_list), 1
+        write (file_unit, *, iostat=rc) particle_list(i)%id, particle_list(i)%ast_id, particle_list(i)%color
+        if (rc /= 0) exit
+        write (file_unit, *, iostat=rc) particle_list(i)%mass, particle_list(i)%radius
+        write (file_unit, *, iostat=rc) particle_list(i)%pos
+        write (file_unit, *, iostat=rc) particle_list(i)%vel
+        !write (file_unit, *, iostat=rc) particle_list(i)%grav_neighs                         
+    end do
+
+    close (file_unit)
+    print*, "[write_particle_list_to_file] DONE writing."
+
+end subroutine write_particle_list_to_file
+
+subroutine read_particle_list_from_file(particle_list, filename)
+    use, intrinsic :: iso_fortran_env, only: error_unit
+    ! Inputs
+    type(particle), dimension(:), allocatable, intent(out) :: particle_list
+    character(len=*), intent(in) :: filename
+
+    ! Internal variables
+    integer file_unit, rc, i
+    integer num_particles
+
+    ! subroutine
+    print*, "[read_particle_list_from_file] reading..."
+    open(action='read', file=filename, iostat=rc, newunit=file_unit)
+
+    if (rc /= 0) then
+        write (error_unit, '(3a, i0)') 'Reading file "', filename, '" failed: ', rc
+        stop
+    end if
+
+    ! read in the number of particles and allocate
+    read (file_unit, *, iostat=rc) num_particles
+    allocate(particle_list(num_particles))
+    
+    do i = 1, size(particle_list), 1
+        read (file_unit, *, iostat=rc) particle_list(i)%id, particle_list(i)%ast_id, particle_list(i)%color
+        if (rc /= 0) exit
+        read (file_unit, *, iostat=rc) particle_list(i)%mass, particle_list(i)%radius
+        read (file_unit, *, iostat=rc) particle_list(i)%pos
+        read (file_unit, *, iostat=rc) particle_list(i)%vel
+        !write (file_unit, *, iostat=rc) particle_list(i)%grav_neighs                         
+    end do
+
+    close (file_unit)
+    print*, "[read_particle_list_from_file] DONE reading."
+end subroutine read_particle_list_from_file
+
 end module type_module 
