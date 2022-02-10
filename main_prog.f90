@@ -6,6 +6,7 @@ program main_prog
     use type_module
     use readparams_module
     use utilities_module
+    use gravity_module
 
     ! VARIABLES
     implicit none
@@ -59,11 +60,13 @@ program main_prog
     print*, "[main_prog] DONE adding asteroids."
     print*, "number of particles: ", size(particle_list)
 
-    call write_particle_list_to_file(particle_list, "large_batch.txt")
+    ! call write_particle_list_to_file(particle_list, "large_batch.txt")
 
     !call read_particle_list_from_file(particle_list, "small_batch.txt")
     !print*, (size(particle_list))
-    
-    call write_particle_list_for_paraview(particle_list, "out_files", 1)
 
+    do i = 1, 100, 1
+      call gravity_update_euler(particle_list, 0.01)
+      call write_particle_list_for_paraview(particle_list, "gravity_euler_strong", i)
+    end do
 end program main_prog
