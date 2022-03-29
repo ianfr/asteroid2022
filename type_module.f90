@@ -13,7 +13,15 @@ module type_module
         real, allocatable :: grav_neighs(:) ! neighbor ids for gravity
     end type particle
 
+    ! Basic collision type
+    type collision_struct
+        integer, dimension(2) :: particle_ids = (/ 0, 0 /)
+        real :: collision_time = 10000000.0
+    end type collision_struct
+
 contains
+
+! ROUTINES FOR PARTICLES
 
 subroutine print_particle(the_particle)
     type(particle), intent(in) :: the_particle
@@ -139,11 +147,11 @@ subroutine write_particle_list_for_paraview(particle_list, dirname, filenumber)
     type(particle), dimension(:), intent(in) :: particle_list
     character(len=*), intent(in) :: dirname
     integer, intent(in) :: filenumber
-    character(len=:), allocatable :: format
+    ! character(len=:), allocatable :: format
 
     ! Internal variables
     integer file_unit, rc, i
-    character(len=:), allocatable :: filename, filename_final
+    character(len=:), allocatable :: filename
 
     ! subroutine
     print*, "[write_particle_list_for_paraview] writing..."
@@ -157,9 +165,11 @@ subroutine write_particle_list_for_paraview(particle_list, dirname, filenumber)
 
     write (file_unit, *, iostat=rc) "rx, ry, rz, col_ast"
     
-    format = "(ES14.8, A2, ES14.8, A2, ES14.8, A2, I1)"
+    ! format = "(ES14.8, A2, ES14.8, A2, ES14.8, A2, I1)"
     do i = 1, size(particle_list), 1
-        write (file_unit, format, iostat=rc) particle_list(i)%pos(1), ', ', particle_list(i)%pos(2), ', ', &
+        ! write (file_unit, format, iostat=rc) particle_list(i)%pos(1), ', ', particle_list(i)%pos(2), ', ', &
+        !     particle_list(i)%pos(3), ', ', particle_list(i)%color
+        write (file_unit, *, iostat=rc) particle_list(i)%pos(1), ', ', particle_list(i)%pos(2), ', ', &
             particle_list(i)%pos(3), ', ', particle_list(i)%color
         if (rc /= 0) exit                        
     end do

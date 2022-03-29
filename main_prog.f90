@@ -7,6 +7,7 @@ program main_prog
     use readparams_module
     use utilities_module
     use gravity_module
+    use collision_module
 
     ! VARIABLES
     implicit none
@@ -16,6 +17,7 @@ program main_prog
     integer, parameter :: Y = 2
     integer, parameter :: Z = 3
     integer :: i
+    real :: total_time, accum_coll_time
 
     ! Variables for asteroid creation
     type(particle), allocatable :: particle_list(:)
@@ -23,10 +25,12 @@ program main_prog
     integer :: num_asteroids
 
     ! Varibles that are hard-coded parameters for now
-    real :: PARTICLE_RADIUS = 0.1
+    real :: PARTICLE_RADIUS = 0.2
+    real :: DT = 0.01
 
     ! Variables for program parameters
     character(len=*), parameter :: PARAM_FILE_NAME = "params.txt"
+    character(len=*), parameter :: OUT_DIR = "gravity_euler_new_coll"
     integer :: NUM_PARTICLES, NUM_TIMESTEPS
     real :: MAX_TIME
     ! for now, we just use 2 asteroids
@@ -34,6 +38,8 @@ program main_prog
     real, dimension(:), allocatable :: ASTEROID_RADII
     real, dimension(:,:), allocatable :: ASTEROID_POSITIONS ! every column is the initial asteroid position
     real, dimension(:,:), allocatable :: ASTEROID_VELOCITIES ! every column is the initial asteroid velocity
+
+    type(collision_struct) :: next_coll
 
     ! PROGRAM START
     call create_particle(tmp_particle)
@@ -65,8 +71,33 @@ program main_prog
     !call read_particle_list_from_file(particle_list, "small_batch.txt")
     !print*, (size(particle_list))
 
-    do i = 1, 100, 1
-      call gravity_update_euler(particle_list, 0.01)
-      call write_particle_list_for_paraview(particle_list, "gravity_euler_strong", i)
+    ! do i = 1, NUM_TIMESTEPS, 1
+    i = 0 ! keep track of number of timesteps passed (counts contribs from colls)
+    total_time = 0.0
+    accum_coll_time = 0.0
+    do while (total_time < NUM_TIMESTEPS * DT)
+      next_coll = get_next_collision(particle_list)
+      ! print*, "Next collision time:", next_coll
+      if (next_coll%collision_time < 0 .or. next_coll%collision_time > DT) then
+        call gravity_update_euler(particle_list, DT)
+        total_time = total_time + DT
+        i = i + 1
+        print*, "Completed timestep", i, "of", NUM_TIMESTEPS, "with gravity"
+        call write_particle_list_for_paraview(particle_list, OUT_DIR, i)
+      else
+        ! fast-forward to collision time, then perform collision
+        ! print*, "Collision in", next_coll%collision_time, "secs"
+        call fast_forward(particle_list, next_coll%collision_time)
+        call collide_wrapper(particle_list, next_coll)
+        accum_coll_time = accum_coll_time + next_coll%collision_time
+        total_time = total_time + next_coll%collision_time
+        if (accum_coll_time > DT) then
+          i = i + 1
+          accum_coll_time = 0.0
+          print*, "Completed timestep", i, "of", NUM_TIMESTEPS, "with fast-forward"
+          call write_particle_list_for_paraview(particle_list, OUT_DIR, i)
+        end if
+      end if
+      ! call write_particle_list_for_paraview(particle_list, "gravity_euler_strong_coll", i)
     end do
 end program main_prog

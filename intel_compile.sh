@@ -10,6 +10,7 @@ ifort -stand f08 -O2 -c -warn all testfunction_module.f90 && \
   ifort -stand f08 -O2 -c -warn all utilities_module.f90 && \
   ifort -stand f08 -O2 -c -warn all asteroid_module.f90 && \
   ifort -stand f08 -O2 -c -warn all gravity_module.f90 && \
+  ifort -stand f08 -O2 -c -warn all collision_module.f90 && \
   ifort -stand f08 -O2 -warn all \
     testfunction_module.o \
     type_module.o \
@@ -17,4 +18,5 @@ ifort -stand f08 -O2 -c -warn all testfunction_module.f90 && \
     utilities_module.o \
     asteroid_module.o \
     gravity_module.o \
+    collision_module.o \
     main_prog.f90 -o main_prog
