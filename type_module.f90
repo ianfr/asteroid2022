@@ -147,7 +147,6 @@ subroutine write_particle_list_for_paraview(particle_list, dirname, filenumber)
     type(particle), dimension(:), intent(in) :: particle_list
     character(len=*), intent(in) :: dirname
     integer, intent(in) :: filenumber
-    ! character(len=:), allocatable :: format
 
     ! Internal variables
     integer file_unit, rc, i
@@ -165,10 +164,7 @@ subroutine write_particle_list_for_paraview(particle_list, dirname, filenumber)
 
     write (file_unit, *, iostat=rc) "rx, ry, rz, col_ast"
     
-    ! format = "(ES14.8, A2, ES14.8, A2, ES14.8, A2, I1)"
     do i = 1, size(particle_list), 1
-        ! write (file_unit, format, iostat=rc) particle_list(i)%pos(1), ', ', particle_list(i)%pos(2), ', ', &
-        !     particle_list(i)%pos(3), ', ', particle_list(i)%color
         write (file_unit, *, iostat=rc) particle_list(i)%pos(1), ', ', particle_list(i)%pos(2), ', ', &
             particle_list(i)%pos(3), ', ', particle_list(i)%color
         if (rc /= 0) exit                        

@@ -82,7 +82,6 @@ subroutine add_asteroid(particle_list, mass_asteroid, radius, particle_radius, r
     end do
 
     ! find the valid coordinates
-    !call print_grid(asteroid_grid)
     num_invalid_points = 0
     do i = 1, size(asteroid_grid), 1
         diff = r_ - asteroid_grid(i)%r

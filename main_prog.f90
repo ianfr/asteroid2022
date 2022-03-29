@@ -1,7 +1,6 @@
 program main_prog
 
     ! IMPORTS
-    ! use testfunction_module
     use asteroid_module
     use type_module
     use readparams_module
@@ -54,8 +53,6 @@ program main_prog
     print*, "steps=",NUM_TIMESTEPS
     print*, "time=",MAX_TIME
 
-    !print*, ASTEROID_POSITIONS(:,2) ! second asteroid position
-
     ! create the asteroids
     print*, "[main_prog] adding asteroids..."
     num_asteroids = size(ASTEROID_MASSES)
@@ -66,18 +63,11 @@ program main_prog
     print*, "[main_prog] DONE adding asteroids."
     print*, "number of particles: ", size(particle_list)
 
-    ! call write_particle_list_to_file(particle_list, "large_batch.txt")
-
-    !call read_particle_list_from_file(particle_list, "small_batch.txt")
-    !print*, (size(particle_list))
-
-    ! do i = 1, NUM_TIMESTEPS, 1
     i = 0 ! keep track of number of timesteps passed (counts contribs from colls)
     total_time = 0.0
     accum_coll_time = 0.0
     do while (total_time < NUM_TIMESTEPS * DT)
       next_coll = get_next_collision(particle_list)
-      ! print*, "Next collision time:", next_coll
       if (next_coll%collision_time < 0 .or. next_coll%collision_time > DT) then
         call gravity_update_euler(particle_list, DT)
         total_time = total_time + DT
@@ -86,7 +76,6 @@ program main_prog
         call write_particle_list_for_paraview(particle_list, OUT_DIR, i)
       else
         ! fast-forward to collision time, then perform collision
-        ! print*, "Collision in", next_coll%collision_time, "secs"
         call fast_forward(particle_list, next_coll%collision_time)
         call collide_wrapper(particle_list, next_coll)
         accum_coll_time = accum_coll_time + next_coll%collision_time
@@ -98,6 +87,5 @@ program main_prog
           call write_particle_list_for_paraview(particle_list, OUT_DIR, i)
         end if
       end if
-      ! call write_particle_list_for_paraview(particle_list, "gravity_euler_strong_coll", i)
     end do
 end program main_prog

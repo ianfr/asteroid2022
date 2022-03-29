@@ -25,37 +25,7 @@ function calculate_collision_time(part1, part2) result(time_till_collision)
 
 end function
 
-! referenced https://exploratoria.github.io/exhibits/mechanics/elastic-collisions-in-3d/
-! ASSUMES PARTICLES HAVE SAME MASS
-! subroutine collide(part1, part2)
-!     type(particle), intent(inout) :: part1, part2
-
-!     real, dimension(3) :: x1, x2, v1, v2, n, v_relative, v_normal
-!     ! real :: perc1, perc2 ! might need these later
-
-!     x1 = part1%pos
-!     x2 = part2%pos
-!     v1 = part1%vel
-!     v2 = part2%vel
-
-!     n = (x1 - x2) / norm2(x1 - x2)
-
-!     v_relative = v1 - v2
-
-!     v_normal = dot_product(v1, n) * n
-
-!     v1 = v1 - v_normal
-!     v2 = v2 + v_normal
-
-!     part1%vel = v1
-!     part2%vel = v2
-
-!     ! FOR LATER
-!     ! now, account for the different masses
-!     !perc1 = part1%mass  / (part1%mass + part2%mass)
-! end subroutine
-
-! taken from https://physics.stackexchange.com/questions/681396/elastic-collision-3d-eqaution
+! adapted from https://physics.stackexchange.com/questions/681396/elastic-collision-3d-eqaution
 subroutine collide(part1, part2)
     type(particle), intent(inout) :: part1, part2
 
@@ -150,7 +120,6 @@ function get_next_collision(particle_list) result(next_coll)
     call calculate_all_collisions(particle_list, collision_list)
 
     tmp_collision = collision_list(1)
-    ! print*, tmp_collision
     do i = 2, size(collision_list), 1
         tmp_time = collision_list(i)%collision_time
         if ( ieee_is_finite(tmp_time) ) then ! inf
