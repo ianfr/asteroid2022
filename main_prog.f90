@@ -24,12 +24,12 @@ program main_prog
     integer :: num_asteroids
 
     ! Varibles that are hard-coded parameters for now
-    real :: PARTICLE_RADIUS = 0.2
-    real :: DT = 0.01
+    real :: PARTICLE_RADIUS = 20e3
+    real :: DT = 1
 
     ! Variables for program parameters
     character(len=*), parameter :: PARAM_FILE_NAME = "params.txt"
-    character(len=*), parameter :: OUT_DIR = "gravity_euler_new_coll"
+    character(len=*), parameter :: OUT_DIR = "g_e_std"
     integer :: NUM_PARTICLES, NUM_TIMESTEPS
     real :: MAX_TIME
     ! for now, we just use 2 asteroids
@@ -66,7 +66,7 @@ program main_prog
     i = 0 ! keep track of number of timesteps passed (counts contribs from colls)
     total_time = 0.0
     accum_coll_time = 0.0
-    do while (total_time < NUM_TIMESTEPS * DT)
+    do while (total_time < NUM_TIMESTEPS * DT .and. total_time < MAX_TIME)
       next_coll = get_next_collision(particle_list)
       if (next_coll%collision_time < 0 .or. next_coll%collision_time > DT) then
         call gravity_update_euler(particle_list, DT)

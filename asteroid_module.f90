@@ -116,4 +116,149 @@ subroutine add_asteroid(particle_list, mass_asteroid, radius, particle_radius, r
     ! returns modified particle_list
 end subroutine add_asteroid
 
+subroutine test_if_in_ellipsoid(the_point, a, b, c, r_, tol, result)
+    ! ARGUMENTS
+    real, dimension(3), intent(in) :: the_point, r_
+    real, intent(in) :: a, b, c, tol
+    logical, intent(out) :: result
+
+    ! VARIABLES
+    real :: evald, ta, tb, tc
+
+    ! ROUTINE
+    ta = ((the_point(1) - r_(1))**2) / (a**2)
+    tb = ((the_point(2) - r_(2))**2) / (b**2)
+    tc = ((the_point(3) - r_(3))**2) / (c**2)
+
+    evald = ta + tb + tc
+
+    ! print*, ta,tb,tc
+    ! print*, the_point,a,b,c,evald
+    ! print*, evald
+
+    if (evald < 1.0) then
+        ! print*, "in ellipsoid"
+        result = .true.
+    else
+        result = .false.
+    end if
+
+end subroutine test_if_in_ellipsoid
+
+! from https://masuday.github.io/fortran_tutorial/random.html
+subroutine random_stduniform(u)
+    real,intent(out) :: u
+    real :: r
+    call random_number(r)
+    u = 1 - r
+end subroutine random_stduniform
+! assuming a<b
+ subroutine random_uniform(a,b,x)
+    implicit none
+    real,intent(in) :: a,b
+    real,intent(out) :: x
+    real :: u
+    call random_stduniform(u)
+    x = (b-a)*u + a
+end subroutine random_uniform
+
+subroutine test_if_overlaps(ac, grid, particle_radius, overlaps)
+    ! ARGUMENTS
+    type(asteroid_coordinate), intent(in) :: ac
+    type(asteroid_coordinate), allocatable, intent(inout) :: grid(:)
+    real, intent(in) :: particle_radius
+    logical, intent(out) :: overlaps
+
+    ! VARIABLES
+    integer :: i
+
+    ! ROUTINE
+    if (size(grid) < 1) then
+        overlaps = .false.
+    else
+        overlaps = .false.
+        do i = 1, size(grid)
+            if (norm2(ac%r - grid(i)%r) < 2*particle_radius) then
+                overlaps = .true.
+                exit
+            end if
+        end do
+    end if
+
+end subroutine test_if_overlaps
+
+subroutine add_asteroid_ellipsoid(particle_list, mass_asteroid, a, b, c, particle_radius, r_, v_, n, color)
+    ! ARGUMENTS
+    type(particle), dimension(:), allocatable, intent(inout) :: particle_list
+    real, intent(in) :: mass_asteroid
+    real, intent(in) :: a, b, c ! x, y, and z axis radii for the ellipsoid
+    real, intent(in) :: particle_radius
+    real, dimension(3), intent(in) :: r_
+    real, dimension(3), intent(in) :: v_
+    integer, intent(in) :: n, color 
+
+    ! VARIABLES
+    real :: xmin, xmax, ymin, ymax, zmin, zmax
+    real :: tmp
+    logical :: is_inside, overlaps
+    real, dimension(3) :: temp_center
+    type(asteroid_coordinate), dimension(:), allocatable :: grid
+    type(asteroid_coordinate) :: tmp_ac
+    integer :: nCounter, j
+    real :: particle_mass
+    type(particle) :: temp_particle
+
+
+    ! ROUTINE
+    xmin = r_(1) - a
+    xmax = r_(1) + a
+    ymin = r_(2) - b
+    ymax = r_(2) + b
+    zmin = r_(3) - c
+    zmax = r_(3) + c
+
+    do nCounter = 1,n
+        call random_uniform(xmin, xmax, tmp)
+        temp_center(1) = tmp
+        call random_uniform(ymin, ymax, tmp)
+        temp_center(2) = tmp
+        call random_uniform(zmin, zmax, tmp)
+        temp_center(3) = tmp
+
+        ! print*, temp_center
+
+        call test_if_in_ellipsoid(temp_center, a, b, c, r_, 1e-8, is_inside)
+
+        if (is_inside) then
+            tmp_ac%r = temp_center
+            tmp_ac%valid = .false.
+
+            call test_if_overlaps(tmp_ac, grid, particle_radius, overlaps)
+
+            if (.not. overlaps) then
+                call push_ast_coord(grid, tmp_ac)
+            end if
+        end if
+    end do
+
+    ! add the particles to the list to be returned
+    particle_mass = mass_asteroid / size(grid)
+    print*, "[add_asteroid] size of at grid"
+    print*, size(grid)
+    do j = 1, size(grid), 1
+        temp_particle%pos = grid(j)%r
+        temp_particle%vel = v_
+        temp_particle%mass = particle_mass
+        temp_particle%radius = particle_radius
+        temp_particle%color = color
+        call push_particle(particle_list, temp_particle)
+    end do
+
+    do j = 1, size(particle_list) 
+        particle_list(j)%id = j
+    end do
+
+    ! returns modified particle_list
+end subroutine add_asteroid_ellipsoid
+
 end module asteroid_module

@@ -1,3 +1,4 @@
-2,100,40.0,2,a_m_1,a_r_1,a_p_1,a_v_1
+2,99999999,1e4,2,a_m_2,a_r_2,a_p_2,a_v_2
+# 2,100,40.0,2,a_m_1,a_r_1,a_p_1,a_v_1
 number of particles, number of timesteps, maximum time, num asteroids, asteroid masses filename, \
- asteroid positions filename, asteroid velocities filename
+ asteroid radii filename, asteroid positions filename, asteroid velocities filename
