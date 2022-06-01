@@ -26,10 +26,15 @@ subroutine push_ast_coord(the_array, the_item)
     type(asteroid_coordinate), allocatable :: tmp_array(:)
 
     ! SUBROUTINE
-    allocate(tmp_array(size(the_array) + 1))
-    tmp_array(1:size(the_array)) = the_array
-    tmp_array(size(tmp_array)) = the_item
-    the_array = tmp_array ! req. fortran 2003?
+    allocate(tmp_array(1))
+    tmp_array(1) = the_item
+    if (allocated(the_array)) then
+        the_array = [the_array(:), tmp_array(:)]
+    else
+        allocate(the_array(1))
+        the_array = tmp_array
+    endif
+    
 end subroutine push_ast_coord
 
 subroutine add_asteroid(particle_list, mass_asteroid, radius, particle_radius, r_, v_, color)

@@ -24,12 +24,12 @@ program main_prog
     integer :: num_asteroids
 
     ! Varibles that are hard-coded parameters for now
-    real :: PARTICLE_RADIUS = 20e3
+    real :: PARTICLE_RADIUS = 0.3
     real :: DT = 1
 
     ! Variables for program parameters
     character(len=*), parameter :: PARAM_FILE_NAME = "params.txt"
-    character(len=*), parameter :: OUT_DIR = "g_e_std"
+    character(len=*), parameter :: OUT_DIR = "redo"
     integer :: NUM_PARTICLES, NUM_TIMESTEPS
     real :: MAX_TIME
     ! for now, we just use 2 asteroids
@@ -63,9 +63,10 @@ program main_prog
     print*, "[main_prog] DONE adding asteroids."
     print*, "number of particles: ", size(particle_list)
 
-    i = 0 ! keep track of number of timesteps passed (counts contribs from colls)
     total_time = 0.0
     accum_coll_time = 0.0
+    call write_particle_list_for_paraview(particle_list, OUT_DIR, 0)
+    i = 1 ! keep track of number of timesteps passed (counts contribs from colls)
     do while (total_time < NUM_TIMESTEPS * DT .and. total_time < MAX_TIME)
       next_coll = get_next_collision(particle_list)
       if (next_coll%collision_time < 0 .or. next_coll%collision_time > DT) then
@@ -76,6 +77,7 @@ program main_prog
         call write_particle_list_for_paraview(particle_list, OUT_DIR, i)
       else
         ! fast-forward to collision time, then perform collision
+        !print*, "Next coll in ", next_coll%collision_time
         call fast_forward(particle_list, next_coll%collision_time)
         call collide_wrapper(particle_list, next_coll)
         accum_coll_time = accum_coll_time + next_coll%collision_time
