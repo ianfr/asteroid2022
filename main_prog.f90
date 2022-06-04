@@ -29,7 +29,7 @@ program main_prog
 
     ! Variables for program parameters
     character(len=*), parameter :: PARAM_FILE_NAME = "params.txt"
-    character(len=*), parameter :: OUT_DIR = "redo"
+    character(len=*), parameter :: OUT_DIR = "use_impulse"
     integer :: NUM_PARTICLES, NUM_TIMESTEPS
     real :: MAX_TIME
     ! for now, we just use 2 asteroids
@@ -77,7 +77,7 @@ program main_prog
         call write_particle_list_for_paraview(particle_list, OUT_DIR, i)
       else
         ! fast-forward to collision time, then perform collision
-        !print*, "Next coll in ", next_coll%collision_time
+        ! print*, "Next coll in ", next_coll%collision_time
         call fast_forward(particle_list, next_coll%collision_time)
         call collide_wrapper(particle_list, next_coll)
         accum_coll_time = accum_coll_time + next_coll%collision_time
