@@ -161,7 +161,7 @@ subroutine write_particle_list_for_paraview(particle_list, dirname, filenumber)
     character(len=:), allocatable :: filename
 
     ! subroutine
-    print*, "[write_particle_list_for_paraview] writing..."
+    !print*, "[write_particle_list_for_paraview] writing..."
 
     open(action='write', file='OUT/'//dirname//'/ast.csv.'//trim(str(filenumber)), iostat=rc, newunit=file_unit)
 
@@ -179,7 +179,7 @@ subroutine write_particle_list_for_paraview(particle_list, dirname, filenumber)
     end do
 
     close (file_unit)
-    print*, "[write_particle_list_for_paraview] DONE writing."
+    !print*, "[write_particle_list_for_paraview] DONE writing."
 
 end subroutine write_particle_list_for_paraview
 
