@@ -178,7 +178,7 @@ subroutine test_if_overlaps(ac, grid, particle_radius, overlaps)
     integer :: i
 
     ! ROUTINE
-    if (size(grid) < 1) then
+    if (size(grid) < 1 .or. (.not. allocated(grid))) then
         overlaps = .false.
     else
         overlaps = .false.

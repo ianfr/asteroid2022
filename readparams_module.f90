@@ -5,7 +5,7 @@ contains
 
 ! based on https://jblevins.org/log/control-file
 subroutine read_params_from_file(filename, num_particles, num_timesteps, max_time, asteroid_masses, asteroid_radii, &
-    asteroid_positions, asteroid_velocities, dt, particle_radius, out_dir)
+    asteroid_positions, asteroid_velocities, dt, particle_radius, out_dir, write_mod)
     ! VARIABLES
     ! For returning to main program
     integer, intent(out) :: num_particles, num_timesteps
@@ -15,6 +15,7 @@ subroutine read_params_from_file(filename, num_particles, num_timesteps, max_tim
     real, dimension(:,:), allocatable, intent(out) :: asteroid_positions ! 3 rows, n columns
     real, dimension(:,:), allocatable, intent(out) :: asteroid_velocities ! 3 rows, n columns
     character(len=:), allocatable, intent(out) :: out_dir
+    integer, intent(out) :: write_mod
     ! For the subroutine
     character(len=*), intent(in) :: filename
     character(len=100) :: buffer, label, out_dir_buffer
@@ -82,6 +83,9 @@ subroutine read_params_from_file(filename, num_particles, num_timesteps, max_tim
                 read(buffer, *, iostat=ios) out_dir_buffer
                 out_dir = trim(out_dir_buffer)
                 print *, 'Read out_dir: ', out_dir
+            case ('write_mod')
+                read(buffer, *, iostat=ios) write_mod
+                print *, 'Read write_mod: ', write_mod
             case default
                 print *, 'Skipping invalid label at line', line
             end select

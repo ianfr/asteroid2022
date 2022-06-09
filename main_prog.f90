@@ -10,13 +10,8 @@ program main_prog
 
     ! VARIABLES
     implicit none
-    ! type(particle) :: tmp_particle
-    ! real, parameter :: PI = 4.0*ATAN(1.0)
-    ! integer, parameter :: X = 1
-    ! integer, parameter :: Y = 2
-    ! integer, parameter :: Z = 3
-    integer :: i
-    real :: total_time, accum_coll_time
+    integer :: i, fileCounter, bbox_count
+    real :: total_time, accum_coll_time, eff_dt
 
     ! Variables for asteroid creation
     type(particle), allocatable :: particle_list(:)
@@ -25,20 +20,18 @@ program main_prog
 
     ! Varibles that are hard-coded parameters for now
     real :: PARTICLE_RADIUS
-    real :: DT
+    real :: DT ! DT now acts as an upper bound for timesteps
 
     ! Variables for program parameters
     character(len=*), parameter :: PARAM_FILE_NAME = "control.txt"
     character(len=:), allocatable :: OUT_DIR
-    integer :: NUM_PARTICLES, NUM_TIMESTEPS
+    integer :: NUM_PARTICLES, NUM_TIMESTEPS, WRITE_MOD
     real :: MAX_TIME
     ! for now, we just use 2 asteroids
     real, dimension(:), allocatable :: ASTEROID_MASSES
     real, dimension(:), allocatable :: ASTEROID_RADII
     real, dimension(:,:), allocatable :: ASTEROID_POSITIONS ! every column is the initial asteroid position
     real, dimension(:,:), allocatable :: ASTEROID_VELOCITIES ! every column is the initial asteroid velocity
-
-    ! type(collision_struct) :: next_coll
 
     ! PROGRAM START
     print*, "SIMULATION OF RUBBLE-PILE ASTEROIDS WITH:"
@@ -51,29 +44,21 @@ program main_prog
     print*, "(c) Ian Friedrichs 2022"
     print*, ""
 
-    ! call create_particle(tmp_particle)
-    
-    ! print*, tmp_particle%mass!
-
-    ! call readparams(PARAM_FILE_NAME, NUM_PARTICLES, NUM_TIMESTEPS, &
-    !   MAX_TIME, ASTEROID_MASSES, ASTEROID_RADII, ASTEROID_POSITIONS, ASTEROID_VELOCITIES)
-
     call read_params_from_file(PARAM_FILE_NAME, NUM_PARTICLES, NUM_TIMESTEPS, &
       MAX_TIME, ASTEROID_MASSES, ASTEROID_RADII, ASTEROID_POSITIONS, ASTEROID_VELOCITIES, &
-      DT, PARTICLE_RADIUS, OUT_DIR)
-
-    ! print*, "Asteroid Simulation"
-    ! print*, "n=",NUM_PARTICLES ! the maximum number - actual will be much less
-    ! print*, "steps=",NUM_TIMESTEPS
-    ! print*, "time=",MAX_TIME
+      DT, PARTICLE_RADIUS, OUT_DIR, WRITE_MOD)
 
     ! create the asteroids
     print*, "[main_prog] adding asteroids..."
     num_asteroids = size(ASTEROID_MASSES)
-    do ast_ind = 1, num_asteroids, 1
-      call add_asteroid(particle_list, ASTEROID_MASSES(ast_ind), ASTEROID_RADII(ast_ind), &
-        PARTICLE_RADIUS, ASTEROID_POSITIONS(:,ast_ind), ASTEROID_VELOCITIES(:,ast_ind), ast_ind) ! modifies particle_list
-    end do
+    ! do ast_ind = 1, num_asteroids, 1
+    !   call add_asteroid(particle_list, ASTEROID_MASSES(ast_ind), ASTEROID_RADII(ast_ind), &
+    !     PARTICLE_RADIUS, ASTEROID_POSITIONS(:,ast_ind), ASTEROID_VELOCITIES(:,ast_ind), ast_ind) ! modifies particle_list
+    ! end do
+    ! based on Bennu
+    call add_asteroid_ellipsoid(particle_list, 78e9, 280.0, 250.0, 250.0, 10.0, [0.0,0.0,0.0], [0.0,0.0,0.0], 100, 0)
+    call add_asteroid_ellipsoid(particle_list, 78e9, 280.0, 250.0, 250.0, 10.0, [700.0,0.0,0.0], [-10.0,0.0,0.0], 100, 0)
+
     print*, "[main_prog] DONE adding asteroids."
     print*, "number of particles: ", size(particle_list)
 
@@ -81,33 +66,29 @@ program main_prog
     accum_coll_time = 0.0
     call write_particle_list_for_paraview(particle_list, OUT_DIR, 0)
     i = 0 ! keep track of number of timesteps passed (counts contribs from colls)
+    fileCounter = 1
+
+    eff_dt = calculate_next_dt(particle_list)
+    if (eff_dt .gt. DT) then
+      eff_dt = DT
+    end if
+
     do while (total_time < NUM_TIMESTEPS * DT .and. total_time < MAX_TIME)
-      ! next_coll = get_next_collision(particle_list)
-      ! if (next_coll%collision_time < 0 .or. next_coll%collision_time > DT) then
-      !   call gravity_update_euler(particle_list, DT)
-      !   total_time = total_time + DT
-      !   i = i + 1
-      !   print*, "Completed timestep", i, "of", NUM_TIMESTEPS, "with gravity"
-      !   call write_particle_list_for_paraview(particle_list, OUT_DIR, i)
-      ! else
-      !   ! fast-forward to collision time, then perform collision
-      !   ! print*, "Next coll in ", next_coll%collision_time
-      !   call fast_forward(particle_list, next_coll%collision_time)
-      !   call collide_wrapper(particle_list, next_coll)
-      !   accum_coll_time = accum_coll_time + next_coll%collision_time
-      !   total_time = total_time + next_coll%collision_time
-      !   if (accum_coll_time > DT) then
-      !     i = i + 1
-      !     accum_coll_time = 0.0
-      !     print*, "Completed timestep", i, "of", NUM_TIMESTEPS, "with fast-forward"
-      !     call write_particle_list_for_paraview(particle_list, OUT_DIR, i)
-      !   end if
-      ! end if
-      call gravity_update_euler(particle_list, DT)
-      total_time = total_time + DT
+      call gravity_update_euler(particle_list, eff_dt)
+      total_time = total_time + eff_dt
       i = i + 1
-      !print*, "Completed timestep", i, "of", NUM_TIMESTEPS, "with gravity & fictional coll. force"
-      print*, "Total sim time passed", total_time, "of", MAX_TIME
-      call write_particle_list_for_paraview(particle_list, OUT_DIR, i)
+      if (mod(i, write_mod) .eq. 0) then
+        call write_particle_list_for_paraview(particle_list, OUT_DIR, fileCounter)
+        fileCounter = fileCounter + 1
+        print*, "Total sim time passed", total_time, "of", MAX_TIME
+        print*, "effective dt:", eff_dt
+      end if
+      do bbox_count = 1,2,1
+        call bbox_collisions(particle_list)
+      end do
+      eff_dt = calculate_next_dt(particle_list)
+      if (eff_dt .gt. DT) then
+        eff_dt = DT
+      end if
     end do
 end program main_prog

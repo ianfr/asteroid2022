@@ -6,7 +6,7 @@ import pandas as pd
 
 import os
 
-folder = 'use_impulse_full_1'
+folder = 'bbox'
 directory = './OUT/' + folder
 
 BOUND = 2.5

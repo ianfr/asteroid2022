@@ -188,6 +188,7 @@ subroutine bbox_collisions(particle_list)
     type(particle), dimension(:), intent(inout) :: particle_list
     integer :: i,j
     real :: sep_buf
+    logical, dimension(:,:), allocatable :: coll_list
 
     sep_buf = 0.05 * particle_list(1)%radius
 

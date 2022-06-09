@@ -1,11 +1,12 @@
 num_particles 10
-num_timesteps 100000
-max_time 100
+num_timesteps 999999999
+max_time 100000
 num_asteroids 2
 ast_m_file a_m_1
 ast_rad_file a_r_1
 ast_pos_file a_p_1
 ast_vel_file a_v_1 
-dt 0.01
+dt 0.15
 particle_radius 0.3
-out_dir fix_impulse_1
+out_dir bennu-2
+write_mod 10000
