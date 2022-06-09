@@ -121,10 +121,10 @@ subroutine add_asteroid(particle_list, mass_asteroid, radius, particle_radius, r
     ! returns modified particle_list
 end subroutine add_asteroid
 
-subroutine test_if_in_ellipsoid(the_point, a, b, c, r_, tol, result)
+subroutine test_if_in_ellipsoid(the_point, a, b, c, r_, result)
     ! ARGUMENTS
     real, dimension(3), intent(in) :: the_point, r_
-    real, intent(in) :: a, b, c, tol
+    real, intent(in) :: a, b, c
     logical, intent(out) :: result
 
     ! VARIABLES
@@ -178,7 +178,7 @@ subroutine test_if_overlaps(ac, grid, particle_radius, overlaps)
     integer :: i
 
     ! ROUTINE
-    if (size(grid) < 1) then
+    if (size(grid) < 1 .or. (.not. allocated(grid))) then
         overlaps = .false.
     else
         overlaps = .false.
@@ -232,7 +232,7 @@ subroutine add_asteroid_ellipsoid(particle_list, mass_asteroid, a, b, c, particl
 
         ! print*, temp_center
 
-        call test_if_in_ellipsoid(temp_center, a, b, c, r_, 1e-8, is_inside)
+        call test_if_in_ellipsoid(temp_center, a, b, c, r_, is_inside)
 
         if (is_inside) then
             tmp_ac%r = temp_center

@@ -26,7 +26,7 @@ function calculate_collision_time(part1, part2) result(time_till_collision)
 end function
 
 ! adapted from https://physics.stackexchange.com/questions/681396/elastic-collision-3d-eqaution
-subroutine collide(part1, part2)
+subroutine collide_old(part1, part2)
     type(particle), intent(inout) :: part1, part2
 
     real, dimension(3) :: r1, r2, r12, r21, r12_hat, r21_hat
@@ -51,6 +51,36 @@ subroutine collide(part1, part2)
     part1%vel = part1%vel - mass_factor_1 * dot_product(r12_hat, v12) * r12_hat
 
     part2%vel = part2%vel - mass_factor_2 * dot_product(r21_hat, v21) * r21_hat
+
+end subroutine
+
+! adapted from https://physics.stackexchange.com/questions/681396/elastic-collision-3d-eqaution
+subroutine collide(part1, part2)
+    type(particle), intent(inout) :: part1, part2
+
+    real :: m1, m2, m_eff, epsilon, v_imp, j
+    real, dimension(3) :: pos1, pos2, v1, v2
+    real, dimension(3) :: n, dv1, dv2
+
+    m1 = part1%mass
+    m2 = part2%mass
+    pos1 = part1%pos
+    pos2 = part2%pos
+    v1 = part1%vel
+    v2 = part2%vel
+
+    epsilon = 1 ! coeff of restitution
+
+    n = (pos2 - pos1) / norm2(pos2 - pos1)
+    m_eff = 1.0 / ( (1.0/m1) + (1.0/m2) )
+    v_imp = dot_product(n, v1 - v2)
+    j = (1 + epsilon) * m_eff * v_imp
+
+    dv1 = -(j/m1) * n
+    dv2 =  (j/m2) * n
+    
+    part1%vel = part1%vel + dv1
+    part2%vel = part2%vel + dv2
 
 end subroutine
 
@@ -151,5 +181,51 @@ subroutine fast_forward(particle_list, DT)
     end do
 
 end subroutine fast_forward
+
+! if any particles are overlapping / very close, calculate the collision between them
+! MODIFIES particle_list
+subroutine bbox_collisions(particle_list)
+    type(particle), dimension(:), intent(inout) :: particle_list
+    integer :: i,j
+    real :: sep_buf
+    logical, dimension(:,:), allocatable :: coll_list
+
+    sep_buf = 0.05 * particle_list(1)%radius
+
+    do i = 1, size(particle_list), 1
+        do j = 1, size(particle_list), 1
+            if (i .ne. j) then
+                 if (norm2(particle_list(i)%pos - particle_list(j)%pos) <= &
+                        particle_list(i)%radius + particle_list(j)%radius + sep_buf) then
+                    call collide(particle_list(i), particle_list(j))
+                 end if
+            end if
+        end do
+    end do
+
+
+end subroutine bbox_collisions
+
+! calculate a new timestep s.t.: (v_max + v_second_max) * new_dt < 2*particle_radius
+! ASSUMES uniform radii, but it's also just a heuristic so not a huge deal, could also precompute average radius size
+real function calculate_next_dt(particle_list) result(new_dt)
+    type(particle), dimension(:), intent(in) :: particle_list
+
+    integer :: i
+    real, dimension(:), allocatable :: v_list 
+    real :: v_max, v_second_max
+
+    allocate(v_list(size(particle_list)))
+
+    do i = 1, size(particle_list), 1
+        v_list(i) = norm2(particle_list(i)%vel)
+    end do
+
+    v_max = maxval(v_list)
+    v_second_max = maxval(v_list, mask = v_list .le. v_max)
+
+    new_dt = (2.0 * particle_list(1)%radius) / ((v_max + v_second_max))
+
+end function
 
 end module collision_module
