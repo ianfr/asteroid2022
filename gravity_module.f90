@@ -60,4 +60,38 @@ subroutine gravity_update_euler(particle_list, timestep)
 
 end subroutine gravity_update_euler
 
+subroutine gravity_update_rk4(particle_list, timestep)
+    ! Input variables
+    type(particle), dimension(:), intent(inout) :: particle_list
+    real, intent(in) :: timestep
+
+    ! Internal variables
+    integer :: i
+    real, dimension(:,:), allocatable :: force_list
+    real, dimension(3) :: kv1, kv2, kv3, kv4, kr1, kr2, kr3, kr4, a, r, v
+    real :: h
+
+    ! Subroutine
+    h = timestep
+    call calculate_forces(particle_list, force_list)
+
+    do i = 1, size(particle_list), 1
+        r = particle_list(i)%pos
+        v = particle_list(i)%vel
+        a = force_list(:,i) / particle_list(i)%mass
+        kr1 = v
+        kv1 = a * r
+        kr2 = v * kv1 * (h/2.0)
+        kv2 = a * (r + kr1 * (h/2.0))
+        kr3 = v * kv2 * (h/2.0)
+        kv3 = a * (r + kr2 * (h/2.0))
+        kr4 = v * kv3 * h
+        kv4 = a * (r + kr3 * h)
+        particle_list(i)%vel = v + (h/6.0) * (kv1 + 2*kv2 + 2*kv3 + kv4)
+        particle_list(i)%pos = r + (h/6.0) * (kr1 + 2*kr2 + 2*kr3 + kr4)
+    end do
+
+end subroutine gravity_update_rk4
+
+
 end module gravity_module

@@ -8,5 +8,5 @@ ast_pos_file a_p_1
 ast_vel_file a_v_1 
 dt 0.15
 particle_radius 0.3
-out_dir bennu-2
+out_dir coeffres
 write_mod 10000

@@ -34,12 +34,16 @@ program main_prog
     real, dimension(:,:), allocatable :: ASTEROID_VELOCITIES ! every column is the initial asteroid velocity
 
     ! PROGRAM START
-    print*, "SIMULATION OF RUBBLE-PILE ASTEROIDS WITH:"
+    print*, "SIMULATION OF RUBBLE-PILE ASTEROID COLLISION & FORMATION WITH:"
     print*, "    FORCES:"
-    print*, "        GRAVITATIONAL"
-    print*, "        FICTIONAL COLLISION"
+    print*, "        * GRAVITATIONAL"
     print*, "    INTEGRATION SCHEME OPTIONS:"
-    print*, "        EULER"
+    print*, "        * EULER"
+    print*, "        * RK4 (RUNGE-KUTTA 4TH-ORDER)"
+    print*, "    COLLISION SCHEME:"
+    print*, "        IMPULSE-BASED W/ COEFF. OF RESTITUTION, AND"
+    print*, "        'BOUNDING-SPHERE' COLLISION DETECTION, WITH"
+    print*, "        VARIABLE TIMESTEP TO MINIMIZE MISSED COLLISIONS"
     print*, ""
     print*, "(c) Ian Friedrichs 2022"
     print*, ""
@@ -57,7 +61,7 @@ program main_prog
     ! end do
     ! based on Bennu
     call add_asteroid_ellipsoid(particle_list, 78e9, 280.0, 250.0, 250.0, 10.0, [0.0,0.0,0.0], [0.0,0.0,0.0], 100, 0)
-    call add_asteroid_ellipsoid(particle_list, 78e9, 280.0, 250.0, 250.0, 10.0, [700.0,0.0,0.0], [-10.0,0.0,0.0], 100, 0)
+    call add_asteroid_ellipsoid(particle_list, 78e9, 280.0, 250.0, 250.0, 10.0, [700.0,0.0,0.0], [-10.0,0.0,0.0], 100, 1)
 
     print*, "[main_prog] DONE adding asteroids."
     print*, "number of particles: ", size(particle_list)
