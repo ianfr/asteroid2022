@@ -182,4 +182,49 @@ subroutine fast_forward(particle_list, DT)
 
 end subroutine fast_forward
 
+! if any particles are overlapping / very close, calculate the collision between them
+! MODIFIES particle_list
+subroutine bbox_collisions(particle_list)
+    type(particle), dimension(:), intent(inout) :: particle_list
+    integer :: i,j
+    real :: sep_buf
+
+    sep_buf = 0.05 * particle_list(1)%radius
+
+    do i = 1, size(particle_list), 1
+        do j = 1, size(particle_list), 1
+            if (i .ne. j) then
+                 if (norm2(particle_list(i)%pos - particle_list(j)%pos) <= &
+                        particle_list(i)%radius + particle_list(j)%radius + sep_buf) then
+                    call collide(particle_list(i), particle_list(j))
+                 end if
+            end if
+        end do
+    end do
+
+
+end subroutine bbox_collisions
+
+! calculate a new timestep s.t.: (v_max + v_second_max) * new_dt < 2*particle_radius
+! ASSUMES uniform radii, but it's also just a heuristic so not a huge deal, could also precompute average radius size
+real function calculate_next_dt(particle_list) result(new_dt)
+    type(particle), dimension(:), intent(in) :: particle_list
+
+    integer :: i
+    real, dimension(:), allocatable :: v_list 
+    real :: v_max, v_second_max
+
+    allocate(v_list(size(particle_list)))
+
+    do i = 1, size(particle_list), 1
+        v_list(i) = norm2(particle_list(i)%vel)
+    end do
+
+    v_max = maxval(v_list)
+    v_second_max = maxval(v_list, mask = v_list .le. v_max)
+
+    new_dt = (2.0 * particle_list(1)%radius) / ((v_max + v_second_max))
+
+end function
+
 end module collision_module

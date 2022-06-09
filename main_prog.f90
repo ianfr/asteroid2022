@@ -80,7 +80,7 @@ program main_prog
     total_time = 0.0
     accum_coll_time = 0.0
     call write_particle_list_for_paraview(particle_list, OUT_DIR, 0)
-    i = 1 ! keep track of number of timesteps passed (counts contribs from colls)
+    i = 0 ! keep track of number of timesteps passed (counts contribs from colls)
     do while (total_time < NUM_TIMESTEPS * DT .and. total_time < MAX_TIME)
       ! next_coll = get_next_collision(particle_list)
       ! if (next_coll%collision_time < 0 .or. next_coll%collision_time > DT) then
@@ -107,6 +107,7 @@ program main_prog
       total_time = total_time + DT
       i = i + 1
       !print*, "Completed timestep", i, "of", NUM_TIMESTEPS, "with gravity & fictional coll. force"
+      print*, "Total sim time passed", total_time, "of", MAX_TIME
       call write_particle_list_for_paraview(particle_list, OUT_DIR, i)
     end do
 end program main_prog

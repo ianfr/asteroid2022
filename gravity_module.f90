@@ -55,18 +55,24 @@ subroutine calculate_forces(particle_list, force_list)
                 v1 = part1%vel
                 v2 = part2%vel
 
-                epsilon = 1 ! coefficient of restitution
-                beta = 1 ! for making force vanish unless close
-                dt_coll = 1
+                if (norm2(pos2-pos1) < 0.05) then
+                    particle_list(i)%color = -1
+                    epsilon = 1 ! coefficient of restitution
+                    beta = 1 ! for making force vanish unless close
+                    dt_coll = 1
 
-                n = (pos2 - pos1) / norm2(pos2 - pos1)
-                m_eff = 1.0 / ( (1.0/m1) + (1.0/m2) )
-                v_imp = dot_product(n, v1 - v2)
-                j_imp = (1 + epsilon) * m_eff * v_imp
+                    n = (pos2 - pos1) / norm2(pos2 - pos1)
+                    m_eff = 1.0 / ( (1.0/m1) + (1.0/m2) )
+                    v_imp = dot_product(n, v1 - v2)
+                    j_imp = (1 + epsilon) * m_eff * v_imp
 
-                scaled_force = exp(-beta * norm2(pos2 - pos1)) * ((1.0/dt_coll) * (1 + epsilon) * m_eff * v_imp * n)
-                temp_force = temp_force - scaled_force
-                 
+                    ! scaled_force = exp(-beta * norm2(pos2 - pos1)) * ((1.0/dt_coll) * (1 + epsilon) * m_eff * v_imp * n)
+                    scaled_force = ((1.0/dt_coll) * (1 + epsilon) * m_eff * v_imp * n)
+                    temp_force = temp_force - scaled_force
+                    ! if (norm2(temp_force) > 0.5) then
+                    !     print*,"temp_force",temp_force
+                    ! end if
+                end if
             end if
         end do
         force_list(:,i) = force_list(:,i) + temp_force

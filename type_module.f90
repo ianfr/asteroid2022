@@ -159,11 +159,15 @@ subroutine write_particle_list_for_paraview(particle_list, dirname, filenumber)
     ! Internal variables
     integer file_unit, rc, i
     character(len=:), allocatable :: filename
+    character(len=10) num_str
 
     ! subroutine
     !print*, "[write_particle_list_for_paraview] writing..."
 
-    open(action='write', file='OUT/'//dirname//'/ast.csv.'//trim(str(filenumber)), iostat=rc, newunit=file_unit)
+    write(num_str, '(I10.10)') filenumber
+
+    ! open(action='write', file='OUT/'//dirname//'/ast.csv.'//trim(str(filenumber)), iostat=rc, newunit=file_unit)
+    open(action='write', file='OUT/'//dirname//'/ast.csv.'//num_str, iostat=rc, newunit=file_unit)
 
     if (rc /= 0) then
         write (error_unit, '(3a, i0)') 'Writing file "', filename, '" failed: ', rc
