@@ -6,54 +6,6 @@ module collision_module
 
 contains
 
-function calculate_collision_time(part1, part2) result(time_till_collision)
-    ! Function Inputs / Outputs
-    type(particle), intent(in) :: part1, part2
-    real :: time_till_collision
-
-    ! Local Variables
-    real :: b, u, dist, d, discr
-
-    ! Function
-    b = dot_product((part2%pos - part1%pos), (part2%vel - part1%vel))
-    u = norm2(part2%vel - part1%vel)
-    dist = norm2(part1%pos - part2%pos)
-    d = 2.0 * part1%radius ! MIGHT CHANGE TO P1%RADIUS + P2%RADIUS WHEN NON EQUAL RADII ARE USED
-    discr = b*b - u*u *(dist*dist - d*d)
-
-    time_till_collision = (-1.0*b - sqrt(discr)) / (u*u)
-
-end function
-
-! adapted from https://physics.stackexchange.com/questions/681396/elastic-collision-3d-eqaution
-subroutine collide_old(part1, part2)
-    type(particle), intent(inout) :: part1, part2
-
-    real, dimension(3) :: r1, r2, r12, r21, r12_hat, r21_hat
-    real, dimension(3) :: v1, v2, v12, v21
-    real :: mass_factor_1, mass_factor_2
-
-    v1 = part1%vel
-    v2 = part2%vel
-    v12 = v1 - v2
-    v21 = v2 - v1
-
-    r1 = part1%pos
-    r2 = part2%pos
-    r12 = r1 - r2
-    r21 = r2 - r1
-    r12_hat = r12/norm2(r12)
-    r21_hat = r21/norm2(r21)
-
-    mass_factor_1 = (2*part2%mass) / (part1%mass + part2%mass)
-    mass_factor_2 = (2*part1%mass) / (part2%mass + part1%mass)
-
-    part1%vel = part1%vel - mass_factor_1 * dot_product(r12_hat, v12) * r12_hat
-
-    part2%vel = part2%vel - mass_factor_2 * dot_product(r21_hat, v21) * r21_hat
-
-end subroutine
-
 ! adapted from https://physics.stackexchange.com/questions/681396/elastic-collision-3d-eqaution
 subroutine collide(part1, part2)
     type(particle), intent(inout) :: part1, part2
@@ -69,7 +21,8 @@ subroutine collide(part1, part2)
     v1 = part1%vel
     v2 = part2%vel
 
-    epsilon = 1 ! coeff of restitution
+    ! coeff of restitution, set to 1 for perfectly elastic
+    epsilon = 0.86 ! https://www.researchgate.net/publication/222983190_A_coefficient_of_restitution_of_rock_materials
 
     n = (pos2 - pos1) / norm2(pos2 - pos1)
     m_eff = 1.0 / ( (1.0/m1) + (1.0/m2) )
@@ -83,88 +36,6 @@ subroutine collide(part1, part2)
     part2%vel = part2%vel + dv2
 
 end subroutine
-
-subroutine collide_wrapper(particle_list, next_coll)
-    type(particle), dimension(:), intent(inout) ::particle_list
-    type(collision_struct), intent(in) :: next_coll
-
-    ! local variables
-    integer ind_1, ind_2, p_ind_1, p_ind_2, i
-
-    ind_1 = next_coll%particle_ids(1)
-    ind_2 = next_coll%particle_ids(2)
-
-    do i = 1, size(particle_list), 1
-        if (particle_list(i)%id .eq. ind_1) then
-            p_ind_1 = i
-        end if
-        if (particle_list(i)%id .eq. ind_2) then
-            p_ind_2 = i
-        end if
-    end do
-
-    call collide(particle_list(p_ind_1), particle_list(p_ind_2))
-
-end subroutine collide_wrapper
-
-
-! assumes that collision_list is already allocated
-subroutine calculate_all_collisions(particle_list, collision_list)
-    ! Function Inputs/Outputs
-    type(particle), dimension(:), intent(in) :: particle_list
-    type(collision_struct), dimension(:), intent(inout) :: collision_list ! size n^2 - n
-
-    ! Local Variables
-    integer :: i, j, c
-
-    ! Subroutine
-    c = 1
-    do i = 1, size(particle_list), 1
-        do j = 1, size(particle_list), 1
-            if (i .ne. j) then
-                collision_list(c)%particle_ids = (/ particle_list(i)%id, particle_list(j)%id /)
-                collision_list(c)%collision_time = abs(calculate_collision_time(particle_list(i), particle_list(j)))
-                if (.not. ieee_is_finite(collision_list(c)%collision_time)) then
-                    collision_list(c)%collision_time = 1e7
-                end if
-                c = c + 1
-            end if
-        end do
-    end do
-
-end subroutine calculate_all_collisions
-
-function get_next_collision(particle_list) result(next_coll)
-    type(particle), dimension(:), intent(in) :: particle_list
-    type(collision_struct) :: next_coll
-
-    ! Local variables
-    type(collision_struct), dimension(:), allocatable :: collision_list ! size n^2 - n
-    integer :: i
-    type(collision_struct) :: tmp_collision
-    real :: tmp_time
-
-    allocate(collision_list(size(particle_list)**2 - size(particle_list)))
-
-    ! modifies collision_list
-    call calculate_all_collisions(particle_list, collision_list)
-
-    tmp_collision = collision_list(1)
-    do i = 2, size(collision_list), 1
-        tmp_time = collision_list(i)%collision_time
-        if ( ieee_is_finite(tmp_time) ) then ! inf
-            if (tmp_time .eq. tmp_time) then ! nan
-                if (tmp_time < tmp_collision%collision_time) then
-                    if (tmp_time > 0) then
-                        tmp_collision = collision_list(i)
-                    end if
-                end if
-            end if
-        end if
-    end do
-
-    next_coll = tmp_collision
-end function
 
 ! fast-forward every particle without the influence of gravity until the next collision
     ! time, which is supplied as an argument

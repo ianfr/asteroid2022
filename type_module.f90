@@ -59,10 +59,6 @@ subroutine push_particle(the_array, the_item)
     type(particle), allocatable :: tmp_array(:)
 
     ! SUBROUTINE
-    !allocate(tmp_array(size(the_array) + 1))
-    !tmp_array(1:size(the_array)) = the_array
-    !tmp_array(size(tmp_array)) = the_item
-    !the_array = tmp_array ! req. fortran 2003?
     allocate(tmp_array(1))
     tmp_array(1) = the_item
     if (allocated(the_array)) then
@@ -166,7 +162,6 @@ subroutine write_particle_list_for_paraview(particle_list, dirname, filenumber)
 
     write(num_str, '(I10.10)') filenumber
 
-    ! open(action='write', file='OUT/'//dirname//'/ast.csv.'//trim(str(filenumber)), iostat=rc, newunit=file_unit)
     open(action='write', file='OUT/'//dirname//'/ast.csv.'//num_str, iostat=rc, newunit=file_unit)
 
     if (rc /= 0) then
