@@ -17,6 +17,7 @@ program main_prog
     type(particle), allocatable :: particle_list(:)
     integer :: ast_ind
     integer :: num_asteroids
+    type(logical), dimension(:,:), allocatable :: collision_matrix
 
     ! Varibles that are hard-coded parameters for now
     real :: PARTICLE_RADIUS
@@ -60,11 +61,15 @@ program main_prog
     !     PARTICLE_RADIUS, ASTEROID_POSITIONS(:,ast_ind), ASTEROID_VELOCITIES(:,ast_ind), ast_ind) ! modifies particle_list
     ! end do
     ! based on Bennu
-    call add_asteroid_ellipsoid(particle_list, 78e9, 280.0, 250.0, 250.0, 10.0, [0.0,0.0,0.0], [0.0,0.0,0.0], 100, 0)
-    call add_asteroid_ellipsoid(particle_list, 78e9, 280.0, 250.0, 250.0, 10.0, [700.0,0.0,0.0], [-10.0,0.0,0.0], 100, 1)
+    call add_asteroid_ellipsoid(particle_list, 78e9, 280.0, 250.0, 250.0, 11.0, [0.0,0.0,0.0], [0.0,0.0,0.0], 10000, 0)
+    call add_asteroid_ellipsoid(particle_list, 78e9, 280.0, 250.0, 250.0, 11.0, [700.0,0.0,0.0], [-10.0,0.0,0.0], 10000, 1)
 
     print*, "[main_prog] DONE adding asteroids."
     print*, "number of particles: ", size(particle_list)
+
+    ! allocate the logical collision matrix to avoid memory realloc in bbox_collisions
+    allocate(collision_matrix(size(particle_list), size(particle_list)))
+    collision_matrix = .false.
 
     total_time = 0.0
     accum_coll_time = 0.0
@@ -88,7 +93,7 @@ program main_prog
         print*, "effective dt:", eff_dt
       end if
       do bbox_count = 1,2,1
-        call bbox_collisions(particle_list)
+        call bbox_collisions(particle_list, collision_matrix)
       end do
       eff_dt = calculate_next_dt(particle_list)
       if (eff_dt .gt. DT) then

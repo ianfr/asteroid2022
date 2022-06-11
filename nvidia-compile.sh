@@ -4,14 +4,14 @@
 rm *.mod
 rm *.o
 
-nvfortran -c -acc -fast -Minfo testfunction_module.f90 && \
-  nvfortran -c -acc -fast -Minfo type_module.f90 && \
-  nvfortran -c -acc -fast -Minfo readparams_module.f90 && \
-  nvfortran -c -acc -fast -Minfo utilities_module.f90 && \
-  nvfortran -c -acc -fast -Minfo asteroid_module.f90 && \
-  nvfortran -c -acc -fast -Minfo gravity_module.f90 && \
-  nvfortran -c -acc -fast -Minfo collision_module.f90 && \
-  nvfortran -acc -fast -Minfo \
+nvfortran -c -acc -fast -Minfo -gpu=cc86 -Minline=my_norm2 testfunction_module.f90 && \
+  nvfortran -c -acc -fast -Minfo -gpu=cc86 -Minline=my_norm2 type_module.f90 && \
+  nvfortran -c -acc -fast -Minfo -gpu=cc86 -Minline=my_norm2 readparams_module.f90 && \
+  nvfortran -c -acc -fast -Minfo -gpu=cc86 -Minline=my_norm2 utilities_module.f90 && \
+  nvfortran -c -acc -fast -Minfo -gpu=cc86 -Minline=my_norm2 asteroid_module.f90 && \
+  nvfortran -c -acc -fast -Minfo -gpu=cc86 -Minline=my_norm2 gravity_module.f90 && \
+  nvfortran -c -acc -fast -Minfo -gpu=cc86 -Minline=my_norm2 collision_module.f90 && \
+  nvfortran -acc -fast -Minfo -gpu=cc86 -Minline=my_norm2 \
     testfunction_module.o \
     type_module.o \
     readparams_module.o \

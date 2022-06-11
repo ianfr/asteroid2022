@@ -182,4 +182,19 @@ subroutine write_particle_list_for_paraview(particle_list, dirname, filenumber)
 
 end subroutine write_particle_list_for_paraview
 
+
+real function my_norm2(the_list) result(the_norm)
+!$acc routine seq
+    real, dimension(:), intent(in) :: the_list
+    integer :: i
+
+    the_norm = 0
+    do i = 1, 3, 1
+        the_norm = the_norm + the_list(i)*the_list(i)
+    end do
+    the_norm = sqrt(the_norm)
+    return
+end function
+
+
 end module type_module 
